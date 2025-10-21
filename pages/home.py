@@ -87,8 +87,9 @@ with st.spinner("레포지토리 불러오는 중..."):
                             with col1:
                                 st.markdown(f"**{i}. {repo}**")
                             with col2:
-                                if st.button("열기", key=f"open_{i}", use_container_width=True):
-                                    st.write(f"https://github.com/{repo}")
+                                if st.button("열기", key=f"grid_{i}", use_container_width=True):
+                                    st.session_state.selected_repo = repo
+                                    st.switch_page("pages/repository_detail.py")
                             st.divider()
                 else:
                     # 그리드 보기
@@ -99,8 +100,9 @@ with st.spinner("레포지토리 불러오는 중..."):
                                 st.markdown(f"#### 📦 {repo.split('/')[-1]}")
                                 if '/' in repo:
                                     st.caption(f"👤 {repo.split('/')[0]}")
-                                if st.button("열기", key=f"grid_{i}", use_container_width=True):
-                                    st.write(f"https://github.com/{repo}")
+                                if st.button("열기", key=f"open_{i}", use_container_width=True):
+                                    st.session_state.selected_repo = repo
+                                    st.switch_page("pages/repository_detail.py")
             else:
                 st.warning(f"'{search}'와 일치하는 레포지토리가 없습니다.")
         else:

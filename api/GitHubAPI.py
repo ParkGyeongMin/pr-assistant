@@ -70,3 +70,129 @@ class GitHubAPI:
             grouped[key].append(repo.full_name)
         
         return grouped
+    
+    def get_pull_requests(self, repo_name):
+        """main 브랜치로 들어오는 PR 목록"""
+        repo = self.github.get_repo(repo_name)
+        pulls = repo.get_pulls(state='all', base='main')
+        
+        return [
+            {
+                'number': pr.number,
+                'title': pr.title,
+                'state': pr.state,
+                'user': pr.user.login,
+                'created_at': pr.created_at.strftime('%Y-%m-%d'),
+                'url': pr.html_url
+            }
+            for pr in pulls
+        ]
+    
+    def get_pull_request_detail(self, repo_name, pr_number):
+        """PR 상세 정보 가져오기"""
+        repo = self.github.get_repo(repo_name)
+        pr = repo.get_pull(pr_number)
+        
+        return {
+            'number': pr.number,
+            'title': pr.title,
+            'body': pr.body,
+            'state': pr.state,
+            'user': pr.user.login,
+            'created_at': pr.created_at.strftime('%Y-%m-%d %H:%M'),
+            'commits': pr.commits,
+            'changed_files': pr.changed_files,
+            'additions': pr.additions,
+            'deletions': pr.deletions,
+            'url': pr.html_url
+        }
+    
+    def get_pull_request_files(self, repo_name, pr_number):
+        """PR의 변경된 파일 목록"""
+        repo = self.github.get_repo(repo_name)
+        pr = repo.get_pull(pr_number)
+        files = pr.get_files()
+        
+        return [
+            {
+                'filename': file.filename,
+                'status': file.status,
+                'additions': file.additions,
+                'deletions': file.deletions,
+                'changes': file.changes,
+                'patch': file.patch if hasattr(file, 'patch') else None
+            }
+            for file in files
+    ]
+
+    def get_pull_request_commits(self, repo_name, pr_number):
+        """PR의 커밋 목록"""
+        repo = self.github.get_repo(repo_name)
+        pr = repo.get_pull(pr_number)
+        commits = pr.get_commits()
+        
+        return [
+            {
+                'sha': commit.sha[:7],
+                'message': commit.commit.message,
+                'author': commit.commit.author.name,
+                'date': commit.commit.author.date.strftime('%Y-%m-%d %H:%M')
+            }
+            for commit in commits
+        ]
+
+    def get_pull_request_comments(self, repo_name, pr_number):
+        """PR의 코멘트"""
+        repo = self.github.get_repo(repo_name)
+        pr = repo.get_pull(pr_number)
+        
+        comments = []
+        
+        # Issue 코멘트
+        for comment in pr.get_issue_comments():
+            comments.append({
+                'type': 'comment',
+                'user': comment.user.login,
+                'body': comment.body,
+                'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M')
+            })
+        
+        # 리뷰 코멘트
+        for comment in pr.get_review_comments():
+            comments.append({
+                'type': 'review',
+                'user': comment.user.login,
+                'body': comment.body,
+                'path': comment.path,
+                'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M')
+            })
+        
+        return sorted(comments, key=lambda x: x['created_at'])
+    
+    def add_commit_comment(self, repo_name, commit_sha, body):
+        """커밋에 코멘트 추가"""
+        repo = self.github.get_repo(repo_name)
+        commit = repo.get_commit(commit_sha)
+        commit.create_comment(body)
+
+    def add_file_comment(self, repo_name, pr_number, body, path, line):
+        """파일 특정 라인에 코멘트 추가"""
+        repo = self.github.get_repo(repo_name)
+        pr = repo.get_pull(pr_number)
+        pr.create_review_comment(body, repo.get_commit(pr.head.sha), path, line)
+
+    def add_pr_comment(self, repo_name, pr_number, body):
+        """PR 전체에 코멘트 추가"""
+        repo = self.github.get_repo(repo_name)
+        pr = repo.get_pull(pr_number)
+        pr.create_issue_comment(body) 
+
+    def merge_pull_request(self, repo_name, pr_number, merge_method='merge'):
+        """PR 병합
+        merge_method: 'merge', 'squash', 'rebase'
+        """
+        repo = self.github.get_repo(repo_name)
+        pr = repo.get_pull(pr_number)
+        
+        result = pr.merge(merge_method=merge_method)
+        return result.merged
