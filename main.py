@@ -3,7 +3,7 @@ import time
 import os
 from dotenv import load_dotenv
 
-from api.github_api import verify_token
+from api.GitHubAPI import GitHubAPI
 
 load_dotenv()
 
@@ -42,14 +42,14 @@ if st.button("로그인", type="primary"):
         status = st.empty()
         status.info("🔄 인증 중...")
         
-        success, username = verify_token(token)
+        api = GitHubAPI(token)
+        success, username = api.verify_token()
         
         status.empty()
         
         if success:
-            st.session_state.github_token = token
-            st.session_state.username = username
-            st.success(f"✅ 인증 성공! 환영합니다, {username}님")
+            st.session_state.github_api = api
+
             time.sleep(1)
             st.switch_page("pages/home.py")
         else:
