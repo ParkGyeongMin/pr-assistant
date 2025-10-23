@@ -197,3 +197,21 @@ class GitHubAPI:
         
         result = pr.merge(merge_method=merge_method)
         return result.merged
+    
+    def get_my_review_prs(self, repo_name):
+        """내가 리뷰어이거나 담당자인 PR만"""
+        repo = self.github.get_repo(repo_name)
+        my_username = self.user.login
+        pulls = repo.get_pulls(state='open', base='main')
+        
+        my_prs = []
+        for pr in pulls:
+            # 리뷰어 확인
+            reviewers = [r.login for r in pr.get_review_requests()[0]]
+            # 담당자 확인
+            assignees = [a.login for a in pr.assignees]
+            
+            if my_username in reviewers or my_username in assignees:
+                my_prs.append(pr)
+        
+        return len(my_prs) > 0

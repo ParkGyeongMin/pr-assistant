@@ -66,7 +66,8 @@ with st.spinner("레포지토리 불러오는 중..."):
             with col2:
                 search = st.text_input("🔍", placeholder="검색...", label_visibility="collapsed", key="search_input")   
             with col3:
-                view_mode = st.selectbox("보기", ["목록", "그리드"], label_visibility="collapsed")
+                show_only_pr = st.checkbox("내 리뷰 필요", value=False)
+
             
             st.divider()
             
@@ -76,40 +77,43 @@ with st.spinner("레포지토리 불러오는 중..."):
                 if search.lower() in repo.lower()
             ] if search else repos
             
-            
-            # 레포지토리 표시
-            if filtered_repos:
-                if view_mode == "목록":
-                    # 목록 보기
-                    for i, repo in enumerate(filtered_repos, 1):
-                        with st.container():
-                            col1, col2 = st.columns([0.85, 0.15])
-                            with col1:
-                                st.markdown(f"**{i}. {repo}**")
-                            with col2:
-                                if st.button("열기", key=f"grid_{i}", use_container_width=True):
-                                    st.session_state.selected_repo = repo
-                                    st.switch_page("pages/repository_detail.py")
-                            st.divider()
-                else:
-                    # 그리드 보기
-                    cols = st.columns(3)
-                    for i, repo in enumerate(filtered_repos):
-                        with cols[i % 3]:
-                            with st.container():
-                                st.markdown(f"#### 📦 {repo.split('/')[-1]}")
-                                if '/' in repo:
-                                    st.caption(f"👤 {repo.split('/')[0]}")
-                                if st.button("열기", key=f"open_{i}", use_container_width=True):
-                                    st.session_state.selected_repo = repo
-                                    st.switch_page("pages/repository_detail.py")
-            else:
-                st.warning(f"'{search}'와 일치하는 레포지토리가 없습니다.")
-        else:
-            st.info("📭 레포지토리가 없습니다.")
-            st.markdown("새 레포지토리를 만들어보세요!")
-            
     except Exception as e:
         st.error(f"❌ 오류: {str(e)}")
         if st.button("🔄 다시 시도"):
             st.rerun()
+
+# PR 필터링 추가
+if repos and show_only_pr:
+    repos_with_pr = []
+    with st.spinner("PR 확인 중..."):
+        for repo in filtered_repos:
+            try:
+                pulls = github_api.get_my_review_prs(repo)
+                if pulls:
+                    repos_with_pr.append(repo)
+            except:
+                pass
+    filtered_repos = repos_with_pr
+
+# 레포지토리 표시 (기존 if view_mode 부분 전체 삭제하고 아래로 교체)
+if repos:
+    if filtered_repos:
+        for i, repo in enumerate(filtered_repos, 1):
+            with st.container():
+                col1, col2 = st.columns([0.85, 0.15])
+                with col1:
+                    st.markdown(f"**{i}. {repo}**")
+                with col2:
+                    if st.button("열기", key=f"open_{i}", use_container_width=True):
+                        st.session_state.selected_repo = repo
+                        st.switch_page("pages/repository_detail.py")
+                st.divider()
+    else:
+        if show_only_pr:
+            st.warning("PR이 있는 레포지토리가 없습니다.")
+        else:
+            st.warning(f"'{search}'와 일치하는 레포지토리가 없습니다.")
+else :
+    st.info("📭 레포지토리가 없습니다.")
+    st.markdown("새 레포지토리를 만들어보세요!")
+            
