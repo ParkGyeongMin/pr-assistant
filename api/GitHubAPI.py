@@ -175,11 +175,12 @@ class GitHubAPI:
         commit = repo.get_commit(commit_sha)
         commit.create_comment(body)
 
-    def add_file_comment(self, repo_name, pr_number, body, path, line):
-        """파일 특정 라인에 코멘트 추가"""
+    def add_file_comment(self, repo_name, pr_number, body, path):
+        """파일 전체에 코멘트 추가"""
         repo = self.github.get_repo(repo_name)
         pr = repo.get_pull(pr_number)
-        pr.create_review_comment(body, repo.get_commit(pr.head.sha), path, line)
+        comment_text = f"**📁 {path}**\n\n{body}"
+        pr.create_issue_comment(comment_text)
 
     def add_pr_comment(self, repo_name, pr_number, body):
         """PR 전체에 코멘트 추가"""
