@@ -175,11 +175,12 @@ class GitHubAPI:
         commit = repo.get_commit(commit_sha)
         commit.create_comment(body)
 
-    def add_file_comment(self, repo_name, pr_number, body, path, line):
-        """파일 특정 라인에 코멘트 추가"""
+    def add_file_comment(self, repo_name, pr_number, body, path):
+        """파일 전체에 코멘트 추가"""
         repo = self.github.get_repo(repo_name)
         pr = repo.get_pull(pr_number)
-        pr.create_review_comment(body, repo.get_commit(pr.head.sha), path, line)
+        comment_text = f"**📁 {path}**\n\n{body}"
+        pr.create_issue_comment(comment_text)
 
     def add_pr_comment(self, repo_name, pr_number, body):
         """PR 전체에 코멘트 추가"""
@@ -196,3 +197,21 @@ class GitHubAPI:
         
         result = pr.merge(merge_method=merge_method)
         return result.merged
+    
+    def get_my_review_prs(self, repo_name):
+        """내가 리뷰어이거나 담당자인 PR만"""
+        repo = self.github.get_repo(repo_name)
+        my_username = self.user.login
+        pulls = repo.get_pulls(state='open', base='main')
+        
+        my_prs = []
+        for pr in pulls:
+            # 리뷰어 확인
+            reviewers = [r.login for r in pr.get_review_requests()[0]]
+            # 담당자 확인
+            assignees = [a.login for a in pr.assignees]
+            
+            if my_username in reviewers or my_username in assignees:
+                my_prs.append(pr)
+        
+        return len(my_prs) > 0
