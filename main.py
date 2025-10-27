@@ -4,6 +4,8 @@ import os
 from dotenv import load_dotenv
 
 from api.GitHubAPI import GitHubAPI
+from azure import AzureConfig  # ⭐ 추가
+
 
 load_dotenv()
 
@@ -17,6 +19,8 @@ if "ai_loaded" not in st.session_state:
 
 st.title("PR Assistant")
 st.write("🤖 AI 모델 로딩 및 인증")
+
+AzureConfig.validate()
 
 # AI 로딩
 with st.spinner("AI 모델을 로딩하는 중..."):
