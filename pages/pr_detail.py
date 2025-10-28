@@ -133,11 +133,11 @@ with st.spinner("PR 정보 불러오는 중..."):
                         # 파일 코멘트 입력창
                         if st.session_state.get(f"show_file_input_{i}", False):
                             file_comment_text = st.text_area("파일 전체에 대한 코멘트", key=f"file_text_{i}", height=100)
-                            line_number = st.number_input("라인 번호 (선택)", min_value=1, key=f"line_num_{i}", value=1)
                             if st.button("작성", key=f"file_submit_{i}"):
                                 if file_comment_text:
                                     try:
-                                        github_api.add_file_comment(repo_name, pr_number, file_comment_text, file['filename'], line_number)
+                                        github_api.add_file_comment(repo_name, pr_number, file_comment_text, file['filename'])
+                                        
                                         st.success("✅ 코멘트가 작성되었습니다!")
                                         st.session_state[f"show_file_input_{i}"] = False
                                         st.rerun()
