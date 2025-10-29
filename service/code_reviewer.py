@@ -5,15 +5,6 @@ class CodeReviewer:
         self.search = AzureSearch(language=language)  # ⭐ AI Search
         self.openai = AzureOpenAI()                    # ⭐ OpenAI
         
-    def _load_prompt(self):
-        """프롬프트 파일 로드"""
-        try:
-            with open('prompts/code-review.txt', 'r', encoding='utf-8') as f:
-                return f.read()
-        except Exception as e:
-            print(f"프롬프트 로드 실패: {e}")
-            return ""
-        
     def review_code(self, filename, patch):
         """파일 diff를 분석하여 AI 코드 리뷰 수행"""
         # 언어 판단
