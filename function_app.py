@@ -41,20 +41,18 @@ def PRReviewTrigger(req: func.HttpRequest) -> func.HttpResponse:
                     filename=file['filename'],
                     code_diff=file['patch']
                 )
-                
                 logging.info(f"Review result preview: {review[:200]}")
+
+                logging.info(f"Issues found! Adding comment to {file['filename']}")
                 
-                if '❌' in review:
-                    logging.info(f"Issues found! Adding comment to {file['filename']}")
-                    github_api.add_file_comment(
-                        repo_name, pr_number,
-                        f"## 🤖 AI 자동 리뷰\n\n{review}",
-                        file['filename']
-                    )
-                    reviewed_count += 1
-                    logging.info(f"Comment added successfully")
-                else:
-                    logging.info(f"No issues found in {file['filename']}")
+                github_api.add_file_comment(
+                    repo_name, pr_number,
+                    f"## 🤖 AI 자동 리뷰\n\n{review}",
+                    file['filename']
+                )
+
+                reviewed_count += 1
+                logging.info(f"Comment added successfully")
             else:
                 logging.info(f"No patch for {file['filename']}")
         
