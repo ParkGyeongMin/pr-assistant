@@ -153,7 +153,7 @@ with st.spinner("PR 정보 불러오는 중..."):
                                     key=f"file_text_{i}_{len(ai_result)}",
                                     height=100
                                 )
-                                col1, col2 = st.columns([1,1])
+                                col1, col2= st.columns([0.3,0.3])
 
                                 with col1:
                                     if st.button("Assistant", key=f"file_assistant_{i}"):
@@ -164,9 +164,6 @@ with st.spinner("PR 정보 불러오는 중..."):
                                             st.session_state[f"temp_result_{i}"] = result
                                             print(result)
                                             st.rerun()
-
-
-
 
                                 with col2:
                                     if st.button("작성", key=f"file_submit_{i}"):

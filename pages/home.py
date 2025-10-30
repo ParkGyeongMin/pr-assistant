@@ -1,6 +1,49 @@
 import streamlit as st
+from azure.data.tables import TableServiceClient
+import os
 
 
+def get_table_client():
+    """Azure Table 클라이언트 가져오기"""
+    try:
+        connection_string = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
+        table_service = TableServiceClient.from_connection_string(connection_string)
+        return table_service.get_table_client('prreviewsettings')
+    except Exception as e:
+        st.error(f"Table 연결 실패: {e}")
+        return None
+
+def get_global_auto_review_status():
+    """전역 자동 리뷰 설정 조회"""
+    try:
+        table_client = get_table_client()
+        if not table_client:
+            return False
+        entity = table_client.get_entity(
+            partition_key="global",
+            row_key="auto_review"
+        )
+        return entity.get('enabled', False)
+    except:
+        return False
+
+def save_global_auto_review_setting(enabled):
+    """전역 자동 리뷰 설정 저장"""
+    try:
+        table_client = get_table_client()
+        if not table_client:
+            return False
+        entity = {
+            'PartitionKey': 'global',
+            'RowKey': 'auto_review',
+            'enabled': enabled
+        }
+        table_client.upsert_entity(entity)
+        return True
+    except Exception as e:
+        st.error(f"설정 저장 실패: {e}")
+        return False
+    
 if "github_api" not in st.session_state:
     st.warning("⚠️ 로그인이 필요합니다.")
     st.markdown("GitHub 레포지토리를 확인하려면 먼저 로그인해주세요.")
@@ -18,7 +61,7 @@ st.write(f"환영합니다")
 
 # 필터 생성
 filters = [
-    {"type": "all", "label": "All (전체)"},
+    {"type": "all", "label": "All   (전체)"},
     {"type": "my", "label": "My Repo"}
 ]
 
@@ -60,15 +103,29 @@ with st.spinner("레포지토리 불러오는 중..."):
         
         if repos:
             # 상단 정보 및 필터
-            col1, col2, col3 = st.columns([2, 2, 1])
+            col1, col2, col3,col4 = st.columns([2, 2, 1,1])
             with col1:
                 st.metric("총 레포지토리", len(repos))
             with col2:
                 search = st.text_input("🔍", placeholder="검색...", label_visibility="collapsed", key="search_input")   
             with col3:
                 show_only_pr = st.checkbox("내 리뷰 필요", value=False)
+            with col4:
+                # 자동 리뷰 설정
+                current_status = get_global_auto_review_status()
+                auto_review = st.checkbox(
+                    "🤖 자동 리뷰", 
+                    value=current_status,
+                    help="PR 생성 시 자동으로 AI 리뷰"
+                )
 
-            
+                # 설정 변경 감지 및 저장
+                if auto_review != current_status:
+                    if save_global_auto_review_setting(auto_review):
+                        st.success("✅ 설정 저장됨", icon="✅")
+                    else:
+                        st.error("❌ 설정 저장 실패")
+
             st.divider()
             
             # 필터링

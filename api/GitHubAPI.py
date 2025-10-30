@@ -215,3 +215,12 @@ class GitHubAPI:
                 my_prs.append(pr)
         
         return len(my_prs) > 0
+    
+    def get_file_content(self, repo_name, file_path, sha):
+        """특정 commit의 파일 내용 가져오기"""
+        try:
+            repo = self.github.get_repo(repo_name)
+            file = repo.get_contents(file_path, ref=sha)
+            return file.decoded_content.decode('utf-8')
+        except:
+            return "파일이 존재하지 않습니다."
