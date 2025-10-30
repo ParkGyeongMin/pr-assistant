@@ -30,14 +30,14 @@ class CodeReviewer:
         return review
     
 
-    def calculateTotalexample(items):
+    def calculate_Total_example(items):
         """총합을 계산하는 함수"""
         t=0
         for i in items:
             if i['price']>0:t+=i['price']*i['qty']
         return t
 
-    def very_long_function_name_that_takes_many_parameters_example(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6, parameter7):
+    def xxxx_xxxx_very_long_function_name_that_takes_many_parameters_example(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6, parameter7):
         pass        
 
-    def add_add_add_add_example(a,b):return a+b #덧셈 수행
+    def _dddd_ddddadd_add_add_add_example(a,b):return a+b #덧셈 수행
