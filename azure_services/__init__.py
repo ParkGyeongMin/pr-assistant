@@ -14,6 +14,8 @@ class AzureConfig:
         self.openai_endpoint = os.getenv("AZURE_OPENAI_API_ENDPOINT")
         self.openai_deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT")
 
+        self.storage_connection_string = os.getenv('AZURE_STORAGE_CONNECTION_STRING')
+
 
     def get_index_name(self, language):
         """언어별 인덱스 이름 생성"""
