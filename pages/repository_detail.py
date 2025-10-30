@@ -17,7 +17,7 @@ repo_name = st.session_state.selected_repo
 
 # 뒤로가기 버튼
 if st.button("← 레포 목록"):
-    st.switch_page("pages/repositories.py")
+    st.switch_page("pages/home.py")
 
 st.title(f"📦 {repo_name}")
 
