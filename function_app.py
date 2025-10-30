@@ -13,7 +13,8 @@ def PRReviewTrigger(req: func.HttpRequest) -> func.HttpResponse:
     
     try:
         payload = req.get_json()
-        
+        logging.info(f"Payload: {payload}")
+
         # PR 이벤트 확인
         if payload.get('action') not in ['opened', 'synchronize']:
             return func.HttpResponse("Not a PR event", status_code=200)
