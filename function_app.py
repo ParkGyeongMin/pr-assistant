@@ -42,7 +42,6 @@ def PRReviewTrigger(req: func.HttpRequest) -> func.HttpResponse:
                     code_diff=file['patch']
                 )
                 logging.info(f"Review result preview: {review[:200]}")
-
                 logging.info(f"Issues found! Adding comment to {file['filename']}")
                 
                 github_api.add_file_comment(
