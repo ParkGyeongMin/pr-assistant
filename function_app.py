@@ -13,43 +13,54 @@ def PRReviewTrigger(req: func.HttpRequest) -> func.HttpResponse:
     
     try:
         payload = req.get_json()
-        logging.info(f"Payload: {payload}")
-
-        # PR 이벤트 확인
+        
         if payload.get('action') not in ['opened', 'synchronize']:
+            logging.info(f"Skipping action: {payload.get('action')}")
             return func.HttpResponse("Not a PR event", status_code=200)
         
-        # PR 정보
         pr_number = payload['pull_request']['number']
         repo_name = payload['repository']['full_name']
         
-        logging.info(f"Reviewing PR #{pr_number}")
+        logging.info(f"Processing PR #{pr_number} in {repo_name}")
         
-        # GitHub API 초기화
         github_api = GitHubAPI(os.getenv('GITHUB_TOKEN'))
         reviewer = CodeReviewer()
         
-        # PR 파일들 가져오기
         files = github_api.get_pull_request_files(repo_name, pr_number)
+        logging.info(f"Found {len(files)} files")
+        
+        reviewed_count = 0
         
         for file in files:
+            logging.info(f"Checking file: {file.get('filename')}")
+            
             if file.get('patch'):
-                # 리뷰 수행
+                logging.info(f"Reviewing {file['filename']}")
+                
                 review = reviewer.review_code(
                     filename=file['filename'],
                     code_diff=file['patch']
                 )
                 
-                # 문제 발견 시 코멘트
+                logging.info(f"Review result preview: {review[:200]}")
+                
                 if '❌' in review:
+                    logging.info(f"Issues found! Adding comment to {file['filename']}")
                     github_api.add_file_comment(
                         repo_name, pr_number,
-                        f"## 🤖 AI 리뷰\n\n{review}",
+                        f"## 🤖 AI 자동 리뷰\n\n{review}",
                         file['filename']
                     )
+                    reviewed_count += 1
+                    logging.info(f"Comment added successfully")
+                else:
+                    logging.info(f"No issues found in {file['filename']}")
+            else:
+                logging.info(f"No patch for {file['filename']}")
         
-        return func.HttpResponse("Review completed", status_code=200)
+        logging.info(f"Review completed: {reviewed_count} comments added")
+        return func.HttpResponse(f"Reviewed {reviewed_count} files", status_code=200)
         
     except Exception as e:
-        logging.error(f"Error: {e}")
+        logging.error(f"Error: {str(e)}", exc_info=True)
         return func.HttpResponse(f"Error: {e}", status_code=500)
