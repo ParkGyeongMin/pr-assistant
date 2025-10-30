@@ -15,6 +15,16 @@ client = SearchClient(
     credential=AzureKeyCredential(os.getenv("AZURE_SEARCH_API_KEY"))
 )
 
+# 기존 문서 삭제 (선택사항)
+try:
+    results = client.search("*", select=["id"])
+    ids_to_delete = [{"id": doc["id"]} for doc in results]
+    if ids_to_delete:
+        client.delete_documents(documents=ids_to_delete)
+        print(f"🗑️ 기존 문서 {len(ids_to_delete)}개 삭제")
+except:
+    print("기존 문서 없음")
+    
 # Markdown 읽기
 with open('data/python-code-convention.md', 'r', encoding='utf-8') as f:
     content = f.read()
