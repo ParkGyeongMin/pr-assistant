@@ -2,6 +2,8 @@
 
 > AI 기반 코드 리뷰 도우미 - GitHub 사용이 어려운 관리자와 리뷰어를 위한 스마트 솔루션
 
+
+
 ## 💡 프로젝트 소개
 
 개발자들은 Git/GitHub 사용에 익숙하지만, **코드 리뷰어나 관리자의 경우 GitHub 인터페이스 사용이 미숙**하여 효율적인 코드 리뷰에 어려움을 겪는 경우가 많습니다.
@@ -14,6 +16,12 @@
 - **효율성**: AI가 리뷰 초안을 자동 생성하여 시간 절약
 - **품질**: 일관된 코드 리뷰 기준 적용으로 코드 품질 향상
 - **자동화**: 출장/휴가 중에도 AI가 자동으로 초기 리뷰 진행
+
+## 🌐 데모
+
+**Live Demo**: [https://your-app-url.streamlit.app](https://your-app-url.streamlit.app)
+
+> 💡 GitHub Personal Access Token으로 로그인하여 바로 사용해보실 수 있습니다.
 
 ## ✨ 주요 기능
 
@@ -55,8 +63,9 @@
 ### Azure Services
 - **Azure OpenAI (GPT-4.1-mini)**: 코드 분석 및 리뷰 생성
 - **Azure AI Search**: 코드 컨벤션 및 API 문서 검색
-- **Azure Blob Storage**: 컨벤션/가이드 문서 저장
 - **Azure Function**: 자동 리뷰 트리거 및 처리
+- **Azure Storage Account**: 자동 리뷰 설정 및 상태 관리
+
 
 ## 📖 사용 흐름
 
@@ -69,7 +78,7 @@
 6. **관리자가 리뷰 내용 검토 및 수정**
 7. **GitHub에 리뷰 등록** ✅
 
-### 자동 리뷰 모드 (예정)
+### 자동 리뷰 모드
 1. **팀원이 PR 생성**
 2. **Azure Function이 자동 트리거**
 3. **AI가 자동으로 초기 리뷰 작성**
@@ -97,19 +106,119 @@ AI 기반 초안 생성으로 리뷰 작성 시간 단축
 - Python 3.8 이상
 - GitHub Personal Access Token
 - Azure OpenAI API Key
+- Azure AI Search 서비스
+
+### 환경 설정
+
+1. **저장소 클론**
+```bash
+git clone url
+cd pr-assistant
+```
+
+2. **필요한 패키지 설치**
+```bash
+pip install -r requirements.txt
+```
+
+3. **환경 변수 설정**
+
+`.env` 파일을 프로젝트 루트에 생성하고 다음 내용을 설정하세요:
+```env
+# GitHub 설정
+GITHUB_TOKEN=ghp_your_github_personal_access_token
+
+# Azure OpenAI 설정
+AZURE_OPENAI_API_KEY=your_azure_openai_api_key
+AZURE_OPENAI_API_ENDPOINT=https://your-resource.openai.azure.com/
+AZURE_OPENAI_DEPLOYMENT=gpt-4
+AZURE_OPENAI_API_VERSION =your-aip-version
+
+# Azure AI Search 설정
+AZURE_SEARCH_ENDPOINT=https://your-search-service.search.windows.net
+AZURE_SEARCH_API_KEY=your_search_api_key
+
+# Azure Function 설정 (자동 리뷰용)
+AZURE_FUNCTION_URL=https://your-function-app.azurewebsites.net/api/review
+AZURE_FUNCTION_KEY=your_function_key
+
+AZURE_STORAGE_KEY=your-storage_key
+AZURE_STORAGE_CONNECTION_STRING=your-storage_connection_string
+```
+
+### API 키 발급 방법
+
+#### GitHub Personal Access Token
+1. GitHub → Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. "Generate new token" 클릭
+3. 필요한 권한 선택: `repo`, `read:user`, `write:discussion`
+4. 생성된 토큰 복사
+
+#### Azure OpenAI API Key
+1. Azure Portal → Azure OpenAI Service
+2. "Keys and Endpoint" 메뉴에서 키 확인
+3. Deployment에서 모델 이름 확인
+
+#### Azure AI Search API Key
+1. Azure Portal → Azure AI Search
+2. "Keys" 메뉴에서 Admin Key 확인
+3. Index 이름은 직접 생성한 인덱스명 입력
+
+#### Azure Function 생성
+1. Azure Portal → "Function App" 검색
+2. "만들기" 클릭
+3. 기본 설정:
+   - **런타임 스택**: Python 3.9 이상
+   - **지역**: Korea Central
+4. 생성 후 배포 완료 대기
+
+#### Function URL 및 Key 확인
+1. Azure Portal → 생성한 Function App
+2. "Functions" → 배포된 함수 선택
+3. "Function 키 가져오기" 클릭하여 Function URL과 Key 확인
+```
+   https://your-function-app.azurewebsites.net/api/pr-review-trigger?code=your_function_key
+```
+### GitHub Webhook 등록
+1. **Repository 설정**
+   - GitHub Repository → Settings → Webhooks → "Add webhook"
+
+2. **Webhook 설정**
+   - **Payload URL**: Azure Function URL 입력 (Key 포함)
+   - **Content type**: `application/json`
+   - **Events**: "Pull requests" 선택
+   - **Active** 체크
+
+
+**애플리케이션 실행**
+```bash
+streamlit run main.py
+```
 
 ## 📁 프로젝트 구조
 ```
 pr-assistant/
-├── main.py                 # 로그인 페이지
+├── main.py                          # 로그인 페이지
+├── api/
+│   └── github_api.py                # GitHub API 래퍼
+├── azure_services/
+│   ├── openai.py                    # Azure OpenAI 서비스
+│   └── search.py                    # Azure Search 서비스
+├── data/
+│   ├── create-code-convention.py    # 코드 컨벤션 생성 스크립트
+│   ├── python-code-convention.md    # Python 코드 컨벤션 문서
+│   └── upload-code-convention.py    # 컨벤션 업로드 스크립트
 ├── pages/
-│   ├── home.py            # Repository 목록
-│   ├── repository_detail.py  # PR 목록
-│   ├── pr_detail.py       # PR 상세 및 리뷰
-│   └── settings.py        # AI 설정 (예정)
-├── utils/
-│   └── github_api.py      # GitHub API 래퍼
-└── azure_functions/       # Azure Function 코드 (예정)
+│   ├── home.py                      # Repository 목록
+│   ├── pr_detail.py                 # PR 상세 및 리뷰
+│   └── repository_detail.py         # PR 목록
+├── prompts/
+│   └── code-review.txt              # 코드 리뷰 프롬프트 템플릿
+├── service/
+│   └── code_reviewer.py             # 코드 리뷰 서비스 로직
+├── test/                            # 테스트 코드
+└── utils/
+    └── file_util.py                 # 파일 유틸리티
 ```
 
 ## TODO
@@ -124,16 +233,26 @@ pr-assistant/
 - [x] PR 전체 코멘트 작성
 - [x] PR 병합 기능 (merge/squash/rebase)
 - [x] 내 리뷰 필요한 PR 필터링
-
-### 진행중 🔄
-- [ ] Azure OpenAI 연동
-- [ ] Azure AI Search 구성
-- [ ] Blob Storage 문서 업로드
-- [ ] AI 리뷰 생성 기능
+- [x] Azure OpenAI 연동
+- [x] Azure AI Search 구성
+- [x] AI 리뷰 생성 기능
+- [x] Azure Function 자동 리뷰
+- [x] GitHub Webhook 연동
+- [x] 설정 페이지 (자동 리뷰 ON/OFF)
 
 ### 예정
 - [ ] 세션 만료 시간 설정
 - [ ] 로딩 UI 개선
-- [ ] Azure Function 자동 리뷰
-- [ ] GitHub Webhook 연동
-- [ ] 설정 페이지 (자동 리뷰 ON/OFF)
+
+
+
+## ✨ 회고
+GitHub 코드 리뷰는 개발 프로세스의 핵심이지만, Git/GitHub에 익숙하지 않은 관리자나 리뷰어에게는 진입 장벽이 꽤 높다. 단순히 UI만 제공하는 게 아니라, AI를 활용해서 리뷰 품질까지 높일 수 있다면 훨씬 더 가치 있는 도구가 될 거라는 생각으로 프로젝트를 시작했다.
+
+처음엔 "AI한테 코드 주고 리뷰 요청하면 되겠지" 정도로 생각했는데, 막상 해보니 그렇게 간단하지 않았다. 토큰 제한에 걸리고, 컨텍스트가 부족해서 엉뚱한 리뷰가 나오고, 품질도 들쭉날쭉했다. 이 문제들을 해결하려고 Azure AI Search로 관련 문서를 먼저 찾아주고, 프롬프트를 구조화하고, 관리자가 최종 검토하는 프로세스를 넣음으로써, AI를 자동화 도구가 아니라 "리뷰 초안을 작성해주는 보조자"가 현실적인 것 같았다.
+
+프로젝트를 진행하면서 느낀 건, AI한테 좋은 결과를 받으려면 모델 성능보다 **"어떤 정보를 어떻게 줄 것인가"**가 훨씬 중요하다는 거였다. 그리고 최신 기술이라고 무조건 쓰는 게 아니라, 상황에 맞는 적절한 도구를 고르는 게 핵심이었다. 예를 들어 코드 컨벤션을 찾을 때는 복잡한 AI 검색보다 단순하게 키워드 + 의미 기반 검색을 섞는 게 더 잘 맞았다.
+
+자동화 기능을 만들면서 **"완전 자동화"**가 오히려 위험할 수 있다는 걸 깨달았다. 잘못된 리뷰가 자동으로 올라가면 혼란스러울 수 있으니까, 자동 리뷰를 켜고 끌 수 있게 하고 관리자가 최종 승인하는 구조로 만들었다. 편리함도 중요하지만, 사람이 반드시 확인해야 할 지점은 명확히 해두는 게 필요하다는 걸 배웠다.
+
+이번에 MVP를 직접 만들어보면서 **"문제를 어떻게 해결할지 설계하는 능력"이 더 중요해지고 있다**는 걸 실감했다. 기술 자체보다 그걸 어떻게 조합하고 활용하느냐가 결과물의 품질을 좌우한다는 교훈을 얻었다.
