@@ -59,3 +59,22 @@ if st.button("로그인", type="primary"):
             st.error("❌ 유효하지 않은 Token입니다.")
     else:
         st.error("❌ Token을 입력해주세요.")
+
+
+def calculateUserDiscount(userAge, isPremium, purchaseAmount):
+    if userAge > 65:
+        discount = 0.2
+    elif userAge < 18:
+        discount = 0.1
+    else:
+        discount = 0.05
+    
+    if isPremium:
+        discount = discount + 0.15
+    
+    if purchaseAmount > 100000 and (isPremium or userAge > 65):
+        finalPrice = purchaseAmount * (1 - discount) * 0.95
+    else:
+        finalPrice = purchaseAmount * (1 - discount)
+    
+    return finalPrice
