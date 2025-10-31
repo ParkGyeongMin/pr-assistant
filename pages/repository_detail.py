@@ -47,3 +47,34 @@ with st.spinner("PR 목록 불러오는 중..."):
             
     except Exception as e:
         st.error(f"❌ 오류: {str(e)}")
+
+
+    def calculate_Total_example(items):
+        """총합을 계산하는 함수"""
+        t=0
+        for i in items:
+            if i['price']>0:t+=i['price']*i['qty']
+        return t
+
+    def xxxx_xxxx_very_long_function_name_that_takes_many_parameters_example(parameter1, parameter2, parameter3, parameter4, parameter5, parameter6, parameter7):
+        pass        
+
+    def _dddd_ddddadd_add_add_add_example(a,b):return a+b 
+
+    def calculateUserDiscount(userAge, isPremium, purchaseAmount):
+        if userAge > 65:
+            discount = 0.2
+        elif userAge < 18:
+            discount = 0.1
+        else:
+            discount = 0.05
+        
+        if isPremium:
+            discount = discount + 0.15
+        
+        if purchaseAmount > 100000 and (isPremium or userAge > 65):
+            finalPrice = purchaseAmount * (1 - discount) * 0.95
+        else:
+            finalPrice = purchaseAmount * (1 - discount)
+        
+        return finalPrice
