@@ -34,7 +34,7 @@ st.title("PR Assistant")
 # Token 입력
 st.subheader("GitHub 인증")
 
-default_token = ''#os.getenv('GITHUB_TOKEN', '')
+default_token = os.getenv('GITHUB_TOKEN', '')
 token = st.text_input("GitHub Personal Access Token", type="password", 
                       placeholder="ghp_xxxxxxxxxxxx",value=default_token)
 

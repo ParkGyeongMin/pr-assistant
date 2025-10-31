@@ -19,7 +19,7 @@
 
 ## 🌐 데모
 
-**Live Demo**: [https://your-app-url.streamlit.app](https://your-app-url.streamlit.app)
+**Live Demo**: [https://pro-gyeongmin-webapp.azurewebsites.net/](https://pro-gyeongmin-webapp.azurewebsites.net/)
 
 > 💡 GitHub Personal Access Token으로 로그인하여 바로 사용해보실 수 있습니다.
 
